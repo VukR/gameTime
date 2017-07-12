@@ -1,8 +1,6 @@
 //good for testing, but needs better way to wait for dynamic content to be loaded
 //user id on page is 1533, doesnt change on new login.
 setTimeout(function(){
-
-
 	document.addEventListener("DOMSubtreeModified", function(){
 	   console.log("dom modified");
 	});
@@ -11,6 +9,21 @@ setTimeout(function(){
 		currentDate.getFullYear() + " @ " + currentDate.getHours() + ":" + 
 		currentDate.getMinutes() + ":" + currentDate.getSeconds());
 
+	checkCourts();
+}, 3000);
+
+/*receive message from background that new date was picked, repopulate courts with 
+check boxes. Find better way to way for dynamic content to load instead of setTimeout*/
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse){
+	console.log("received message");
+	if (request.message){
+		setTimeout(checkCourts, 3000);
+	}
+});
+
+/**get first child element of each timeslot div to check type of court availability and place 
+	checkboxes for user to define what court they want to be notified for**/
+function checkCourts(){
 	// chrome.storage.sync.get(null, function(result){
 	// 	console.log("Number of keys: " + result.keys);
 	// });s
@@ -21,9 +34,6 @@ setTimeout(function(){
 	.getElementsByTagName("span")[0].innerHTML.trim();
 	//console.log(activeDate); active date tab
 
-
-	/**get first child element of each timeslot div to check type of court availability and place 
-	checkboxes for user to define what court they want to be notified for**/
 	for(var x = 0; x < courtColumn.length; x++){
 		//console.log(courtColumn[x]);
 		var courts = courtColumn[x].querySelectorAll("div.timeslot");
@@ -81,7 +91,8 @@ setTimeout(function(){
 
 	//interval to get results from page 
 	setInterval(getResults, 2000);
-}, 3000);
+}
+// }, 3000);
 
 /**get check marked boxes and store user selected boxes 
 locally using google sync storage**/

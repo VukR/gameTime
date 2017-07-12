@@ -7,6 +7,17 @@ chrome.webRequest.onBeforeRequest.addListener(
         	console.log(currentDate.getDate() + "/" + (currentDate.getMonth() + 1) + "/" +
 				currentDate.getFullYear() + " @ " + currentDate.getHours() + ":" + 
 				currentDate.getMinutes() + ":" + currentDate.getSeconds());
+
+        	//getting current tab is required to send messages to content script
+        	chrome.tabs.query({currentWindow: true, active: true}, function (tabs){
+        		var activeTab = tabs[0];
+			    chrome.tabs.sendMessage(activeTab.id, {
+				    "message": true
+			    });
+		    });
+        	// chrome.runtime.sendMessage({
+        	// 	message: true
+        	// });
         },
         // {urls: ["<all_urls>"]});
 		{urls: ["http://scsctennis.gametime.net/scheduling/index/jsoncourtdata/sport/1/*"]});
