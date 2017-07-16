@@ -24,7 +24,7 @@ setTimeout(function(){
 
 /*receive message from background that new date was picked, repopulate courts with 
 check boxes. 
-todo Find better way to way for dynamic content to load instead of setTimeout*/
+todo Find better way to wait for dynamic content to load instead of setTimeout*/
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse){
 	console.log("received message");
 	if (request.message){
@@ -32,57 +32,35 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse){
 	}
 });
 
-/**check type of court availability and place checkboxes **/
+//check type of court and place checkboxes
 function createBoxes(){
 
 	var courtColumn = document.querySelectorAll("td.timeslot");
 	var activeDate = document.getElementsByClassName("active")[1]
 	.getElementsByTagName("span")[0].innerHTML.trim();
-	//console.log(activeDate); active date tab
+	//console.log(activeDate);
 
+	//for each court
 	for(var x = 0; x < courtColumn.length; x++){
-		//console.log(courtColumn[x]);
 		var courts = courtColumn[x].querySelectorAll("div.timeslot");
+		//for each time slot on each respective court
 		for(var i = 0; i < courts.length; i++){
-			firstChild = courts[i].firstChild;
+			var firstChild = courts[i].firstChild;
 
-			//courts available for booking, no checkboxes needed
-			if(firstChild.classList.contains("time")){
-				console.log("time-booked: " + firstChild.innerHTML.trim());
+			//courts reserved by staff or by members
+			if(firstChild.classList.contains("title") || 
+				firstChild.classList.contains("timenotitle")){
 
-				if(firstChild.style.backgroundColor == ""){
-					console.log("color does not exist, court is open");
-				}
-			}
-
-			//courts reserved by staff, checkbox needed
-			else if(firstChild.classList.contains("title")){
-				console.log("time-booked: " + firstChild.childNodes[0].innerHTML.trim());
-				console.log("Desc: " + firstChild.childNodes[1].innerHTML.trim());
 				var checkBox = document.createElement("input");
 				checkBox.type = "checkbox";
 				checkBox.id = activeDate + " Court " + (x + 1) + " Time " 
 				+ firstChild.childNodes[0].innerHTML.trim();
 				checkBox.className = "checkBox";
-				//when box is clicked, update it
+				//when box is clicked, update it in memory
 				checkBox.onclick = function(){
-					clicked(this.id);
+					update(this.id);
 				}
-				courts[i].appendChild(checkBox);
-			}
-
-			//court reserved by members, checkbox needed
-			else if (firstChild.classList.contains("timenotitle")){
-				console.log("booked court");
-				var checkBox = document.createElement("input");
-				checkBox.type = "checkbox";
-				checkBox.id = activeDate + " Court " + (x + 1) + " Time " 
-				+ firstChild.childNodes[0].innerHTML.trim();
-				checkBox.className = "checkBox";
-				//when box is clicked, update it
-				checkBox.onclick = function(){
-					clicked(this.id);
-				}
+				//on each court append the check box
 				courts[i].appendChild(checkBox);
 			}
 		}
@@ -103,7 +81,7 @@ function populate(){
 }
 
 //update object that will be saved in memory
-function clicked(id){
+function update(id){
 	console.log("clicked: " + id);
 
 	if(id in courtsObj){
