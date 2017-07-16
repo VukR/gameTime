@@ -1,34 +1,40 @@
-//good for testing, but needs better way to wait for dynamic content to be loaded
-//user id on page is 1533, doesnt change on new login.
+
+//todo, not use a global var
+var courtsObj = {};
+//chrome.storage.sync.clear();
+chrome.storage.sync.get(null, function(result){
+	console.log('start');
+	console.log(result);
+	courtsObj = result;
+});
+
+/*todo needs better way to wait for dynamic content to be loaded
+user id on page is 1533, doesnt change on new login.*/
 setTimeout(function(){
-	document.addEventListener("DOMSubtreeModified", function(){
-	   console.log("dom modified");
-	});
+	// document.addEventListener("DOMSubtreeModified", function(){
+	//    console.log("dom modified");
+	// });
 	var currentDate = new Date();
 	console.log(currentDate.getDate() + "/" + (currentDate.getMonth() + 1) + "/" +
 		currentDate.getFullYear() + " @ " + currentDate.getHours() + ":" + 
 		currentDate.getMinutes() + ":" + currentDate.getSeconds());
 
-	checkCourts();
+	createBoxes();
 }, 3000);
 
 /*receive message from background that new date was picked, repopulate courts with 
-check boxes. Find better way to way for dynamic content to load instead of setTimeout*/
+check boxes. 
+todo Find better way to way for dynamic content to load instead of setTimeout*/
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse){
 	console.log("received message");
 	if (request.message){
-		setTimeout(checkCourts, 3000);
+		setTimeout(createBoxes, 3000);
 	}
 });
 
-/**get first child element of each timeslot div to check type of court availability and place 
-	checkboxes for user to define what court they want to be notified for**/
-function checkCourts(){
-	// chrome.storage.sync.get(null, function(result){
-	// 	console.log("Number of keys: " + result.keys);
-	// });s
+/**check type of court availability and place checkboxes **/
+function createBoxes(){
 
-	//chrome.storage.sync.clear();
 	var courtColumn = document.querySelectorAll("td.timeslot");
 	var activeDate = document.getElementsByClassName("active")[1]
 	.getElementsByTagName("span")[0].innerHTML.trim();
@@ -55,10 +61,13 @@ function checkCourts(){
 				console.log("Desc: " + firstChild.childNodes[1].innerHTML.trim());
 				var checkBox = document.createElement("input");
 				checkBox.type = "checkbox";
-				//checkBox.id = "box" + i;
 				checkBox.id = activeDate + " Court " + (x + 1) + " Time " 
 				+ firstChild.childNodes[0].innerHTML.trim();
 				checkBox.className = "checkBox";
+				//when box is clicked, update it
+				checkBox.onclick = function(){
+					clicked(this.id);
+				}
 				courts[i].appendChild(checkBox);
 			}
 
@@ -67,60 +76,54 @@ function checkCourts(){
 				console.log("booked court");
 				var checkBox = document.createElement("input");
 				checkBox.type = "checkbox";
-				//checkBox.id = "box" + i;
 				checkBox.id = activeDate + " Court " + (x + 1) + " Time " 
 				+ firstChild.childNodes[0].innerHTML.trim();
 				checkBox.className = "checkBox";
+				//when box is clicked, update it
+				checkBox.onclick = function(){
+					clicked(this.id);
+				}
 				courts[i].appendChild(checkBox);
 			}
 		}
 	}
-
-	/**check if court from memory has already been checked and display it**/
-	chrome.storage.sync.get(null, function(result){
-		var checkBoxes = document.getElementsByClassName("checkBox");
-		for(var i = 0; i < Object.values(result).length; i++){
-			for(var x = 0; x < checkBoxes.length; x++){
-				if(checkBoxes[x].id == Object.values(result)[i]){
-					console.log("matches");
-					checkBoxes[x].checked = true;
-				}
-			}
-		}
-	});
-
-	//interval to get results from page 
-	setInterval(getResults, 2000);
+	populate();
 }
-// }, 3000);
 
-/**get check marked boxes and store user selected boxes 
-locally using google sync storage**/
-function getResults(){
-	var checkedArray = [];
-	var courtColumn = document.querySelectorAll("td.timeslot");
-
-	for(var x = 0; x < courtColumn.length; x++){
-		var boxes = courtColumn[x].getElementsByClassName("checkBox");
-		for(var y = 0; y < boxes.length; y++){
-			if(boxes[y].checked){
-				checkedArray.push(boxes[y].id)
-				console.log("box checked");
-				//console.log("checkbox " + boxes[x].id + " is checked"); 
-				// chrome.storage.sync.set({"value": boxes[y].id}, function(){
-				// });
-			}
+//checkmark the boxes that are already in memory
+function populate(){
+	var checkBoxes = document.getElementsByClassName("checkBox");
+	for(var x = 0; x < checkBoxes.length; x++){
+		if(checkBoxes[x].id in courtsObj){
+			console.log("matches");
+			checkBoxes[x].checked = true;
 		}
 	}
 
-	courtsObj = {};
-	for(var i = 0; i < checkedArray.length; i++){
-		courtsObj[i] = checkedArray[i];
+}
+
+//update object that will be saved in memory
+function clicked(id){
+	console.log("clicked: " + id);
+
+	if(id in courtsObj){
+		delete courtsObj[id];
+		console.log("removed id");
 	}
-	
-	chrome.storage.sync.set(courtsObj, function(){});
-	chrome.storage.sync.get(function(result){
-		console.log(result);
+
+	else{
+		courtsObj[id] = "reserved";
+		console.log("save id");
+	}
+
+	sync();
+}
+
+//clear storage before updating with new object, otherwise bug where items are not removed
+//todo find why bug happens
+function sync(){
+	chrome.storage.sync.clear();
+	chrome.storage.sync.set(courtsObj, function(){
+		// console.log("update storage");
 	});
-	console.log("Done");
 }
