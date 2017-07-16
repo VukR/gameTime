@@ -1,34 +1,29 @@
-
-//todo, not use a global var
+//todo, not use global variable
 var courtsObj = {};
-//chrome.storage.sync.clear();
 chrome.storage.sync.get(null, function(result){
 	console.log('start');
 	console.log(result);
 	courtsObj = result;
 });
 
-/*todo needs better way to wait for dynamic content to be loaded
-user id on page is 1533, doesnt change on new login.*/
-setTimeout(function(){
-	// document.addEventListener("DOMSubtreeModified", function(){
-	//    console.log("dom modified");
-	// });
-	var currentDate = new Date();
-	console.log(currentDate.getDate() + "/" + (currentDate.getMonth() + 1) + "/" +
-		currentDate.getFullYear() + " @ " + currentDate.getHours() + ":" + 
-		currentDate.getMinutes() + ":" + currentDate.getSeconds());
 
-	createBoxes();
-}, 3000);
-
-/*receive message from background that new date was picked, repopulate courts with 
-check boxes. 
-todo Find better way to wait for dynamic content to load instead of setTimeout*/
+/*User id on page is 1533, doesnt change on new login.
+Receive message from background that request for data was sent.
+Poll for load of data*/
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse){
 	console.log("received message");
 	if (request.message){
-		setTimeout(createBoxes, 3000);
+		var newLoad = setInterval(function(){
+			console.log("newload setInterval");
+			try{
+				createBoxes();
+				clearInterval(newLoad);
+			}
+			catch(undefined){
+				console.log("not found");
+			}
+
+		}, 100);
 	}
 });
 
@@ -51,12 +46,13 @@ function createBoxes(){
 			if(firstChild.classList.contains("title") || 
 				firstChild.classList.contains("timenotitle")){
 
+				//creating the check box
 				var checkBox = document.createElement("input");
 				checkBox.type = "checkbox";
 				checkBox.id = activeDate + " Court " + (x + 1) + " Time " 
 				+ firstChild.childNodes[0].innerHTML.trim();
 				checkBox.className = "checkBox";
-				//when box is clicked, update it in memory
+				//when box is clicked, calls to update it in memory
 				checkBox.onclick = function(){
 					update(this.id);
 				}

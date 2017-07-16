@@ -1,6 +1,6 @@
 
 //notifies just before an http request gets sent 
-chrome.webRequest.onBeforeRequest.addListener(
+chrome.webRequest.onCompleted.addListener(
         function(details){
         	console.log(details.url);
 
