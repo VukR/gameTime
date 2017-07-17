@@ -1,4 +1,4 @@
-//todo, not use global variable
+//todo, not use global variable for loading data out of memory
 var courtsObj = {};
 chrome.storage.sync.get(null, function(result){
 	console.log('start');
@@ -6,9 +6,23 @@ chrome.storage.sync.get(null, function(result){
 	courtsObj = result;
 });
 
+/*interval to get JSON of court data to compare to users desired watchlist courts
+hard coded url only for testing purpose*/
+var makeCall = setInterval(function(){
+	chrome.runtime.sendMessage({
+		method: "GET",
+		url: "http://scsctennis.gametime.net/scheduling/index/jsoncourtdata/" + 
+		"sport/1/date/2017-7-16",
+	}, function(response){
+		console.log("received response from bg");
+		var myObj = JSON.parse(response);
+		// console.log(response);
+		console.log(myObj);
+	});
+}, 10000);
 
 /*User id on page is 1533, doesnt change on new login.
-Receive message from background that request for data was sent.
+Receive message from background that request for data has completed.
 Poll for load of data*/
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse){
 	console.log("received message");
@@ -16,6 +30,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse){
 		var newLoad = setInterval(function(){
 			console.log("newload setInterval");
 			try{
+				//remove checkboxes so on receive of message, multiple boxes are not placed
+				removeBoxes();
 				createBoxes();
 				clearInterval(newLoad);
 			}
@@ -27,6 +43,14 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse){
 	}
 });
 
+//remove checkBoxes
+function removeBoxes(){
+	var allBoxes = document.getElementsByClassName("checkBox");
+	console.log(allBoxes.length);
+    while(allBoxes.length > 0){
+        allBoxes[0].parentNode.removeChild(allBoxes[0]);
+    }
+}
 //check type of court and place checkboxes
 function createBoxes(){
 

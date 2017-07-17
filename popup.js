@@ -3,7 +3,7 @@ chrome.storage.sync.get(function(result){
 	for(var key in result){
 		console.log("Key: " + key + " value: " + result[key]);
 		var elem = document.createElement("p");
-		elem.innerHTML = result[key];
+		elem.innerHTML = key;
 		document.getElementById("results").appendChild(elem);
 	}
 });
