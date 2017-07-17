@@ -22,9 +22,9 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse){
 
     xhttp.onload = function(){
         var response = xhttp.responseText;
-        console.log(response);
-        var myObj = JSON.parse(response);
-        console.log(myObj);
+        //console.log(response);
+        //var myObj = JSON.parse(response);
+        //console.log(myObj);
 
         sendResponse(response);
     };

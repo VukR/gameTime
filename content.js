@@ -1,5 +1,6 @@
 //todo, not use global variable for loading data out of memory
 var courtsObj = {};
+//chrome.storage.sync.clear();
 chrome.storage.sync.get(null, function(result){
 	console.log('start');
 	console.log(result);
@@ -12,7 +13,7 @@ var makeCall = setInterval(function(){
 	chrome.runtime.sendMessage({
 		method: "GET",
 		url: "http://scsctennis.gametime.net/scheduling/index/jsoncourtdata/" + 
-		"sport/1/date/2017-7-17",
+		"sport/1/date/2017-7-18",
 	}, function(response){
 		console.log("received response from bg");
 		var data = JSON.parse(response);
@@ -23,19 +24,31 @@ var makeCall = setInterval(function(){
 	});
 }, 10000);
 
+/*compare courts out of memory to times of each respective court to see if court is
+available or not
+not hardcode dates to look for*/
 
 function availability(data){
-	// console.log(data.e.length);
-	// console.log(data.e[0]);
-	// console.log(data.e[0].b[0]);
-	//console.log(data.e[0].b.length);
-	for(var i = 0; i < data.e.length; i++){
-		console.log("Court: " + (i + 1));
-		for(var x = 0; x < data.e[i].b.length; x++){
-			console.log(data.e[i].b[x]);
+
+	console.log("court availability");
+	for(var key in courtsObj){
+		var court = courtsObj[key].court;
+		var time = courtsObj[key].t;
+
+		var courtBool = true;
+		console.log("court: " + court + " time: " + time);
+		for(var i = 0; i < data.e[court - 1].b.length; i++){
+			if(time == data.e[court - 1].b[i].t){
+				console.log("Court is still unavailable");
+				courtBool = false;
+			}
+		}
+		if(courtBool){
+			console.log('court is available');
 		}
 	}
 }
+
 /*User id on page is 1533, doesnt change on new login.
 Receive message from background that request for data has completed.
 Poll for load of data*/
@@ -61,7 +74,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse){
 //remove checkBoxes
 function removeBoxes(){
 	var allBoxes = document.getElementsByClassName("checkBox");
-	console.log(allBoxes.length);
+	//console.log(allBoxes.length);
     while(allBoxes.length > 0){
         allBoxes[0].parentNode.removeChild(allBoxes[0]);
     }
@@ -139,6 +152,7 @@ function update(id, time, court){
 	sync();
 }
 
+//convert court time to minutes
 function convertTime(time){
 	var minutes;
 
@@ -147,8 +161,9 @@ function convertTime(time){
 	}
 	else{
 
+		//noon
 		if(time.indexOf("12")){
-			var minutes = paresInt(time) * 60;
+			var minutes = parseInt(time) * 60;
 		}
 		else{
 			var minutes = (parseInt(time) * 60) + 720;
