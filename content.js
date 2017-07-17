@@ -12,15 +12,30 @@ var makeCall = setInterval(function(){
 	chrome.runtime.sendMessage({
 		method: "GET",
 		url: "http://scsctennis.gametime.net/scheduling/index/jsoncourtdata/" + 
-		"sport/1/date/2017-7-16",
+		"sport/1/date/2017-7-17",
 	}, function(response){
 		console.log("received response from bg");
-		var myObj = JSON.parse(response);
+		var data = JSON.parse(response);
 		// console.log(response);
-		console.log(myObj);
+		console.log(data);
+		availability(data);
+
 	});
 }, 10000);
 
+
+function availability(data){
+	// console.log(data.e.length);
+	// console.log(data.e[0]);
+	// console.log(data.e[0].b[0]);
+	//console.log(data.e[0].b.length);
+	for(var i = 0; i < data.e.length; i++){
+		console.log("Court: " + (i + 1));
+		for(var x = 0; x < data.e[i].b.length; x++){
+			console.log(data.e[i].b[x]);
+		}
+	}
+}
 /*User id on page is 1533, doesnt change on new login.
 Receive message from background that request for data has completed.
 Poll for load of data*/
@@ -70,15 +85,19 @@ function createBoxes(){
 			if(firstChild.classList.contains("title") || 
 				firstChild.classList.contains("timenotitle")){
 
+				var time = firstChild.childNodes[0].innerHTML.trim();
+				var court = x + 1;
 				//creating the check box
 				var checkBox = document.createElement("input");
 				checkBox.type = "checkbox";
-				checkBox.id = activeDate + " Court " + (x + 1) + " Time " 
-				+ firstChild.childNodes[0].innerHTML.trim();
+				checkBox.setAttribute("time", time);
+				checkBox.setAttribute("court", court);
+				checkBox.id = activeDate + " Court " + court + " Time " + time;
 				checkBox.className = "checkBox";
 				//when box is clicked, calls to update it in memory
 				checkBox.onclick = function(){
-					update(this.id);
+					// update(this.id, firstChild.childNodes[0].innerHTML.trim(), (x+1));
+					update(this.id, this.getAttribute("time"), this.getAttribute("court"));
 				}
 				//on each court append the check box
 				courts[i].appendChild(checkBox);
@@ -101,8 +120,10 @@ function populate(){
 }
 
 //update object that will be saved in memory
-function update(id){
+function update(id, time, court){
 	console.log("clicked: " + id);
+	//console.log("Time: " + time + " court: " + court);
+	var timeMinutes = convertTime(time);
 
 	if(id in courtsObj){
 		delete courtsObj[id];
@@ -110,11 +131,31 @@ function update(id){
 	}
 
 	else{
-		courtsObj[id] = "reserved";
+		// courtsObj[id] = "reserved";
+		courtsObj[id] = {t: timeMinutes, court: court};
 		console.log("save id");
 	}
 
 	sync();
+}
+
+function convertTime(time){
+	var minutes;
+
+	if(time.indexOf("am") > -1){
+		var minutes = parseInt(time) * 60;
+	}
+	else{
+
+		if(time.indexOf("12")){
+			var minutes = paresInt(time) * 60;
+		}
+		else{
+			var minutes = (parseInt(time) * 60) + 720;
+		}
+	}
+	console.log("time in minutes: " + minutes);
+	return minutes;
 }
 
 //clear storage before updating with new object, otherwise bug where items are not removed
@@ -122,6 +163,6 @@ function update(id){
 function sync(){
 	chrome.storage.sync.clear();
 	chrome.storage.sync.set(courtsObj, function(){
-		// console.log("update storage");
+		console.log("updated storage");
 	});
 }
