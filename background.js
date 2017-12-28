@@ -7,7 +7,7 @@ chrome.webRequest.onCompleted.addListener(
     	chrome.tabs.query({currentWindow: true, active: true}, function (tabs){
     		var activeTab = tabs[0];
 		    chrome.tabs.sendMessage(activeTab.id, {
-			    "message": true
+			    "message": "complete"
 		    });
 	    });
     },
@@ -22,15 +22,20 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse){
 
     xhttp.onload = function(){
         var response = xhttp.responseText;
-        //console.log(response);
-        //var myObj = JSON.parse(response);
-        //console.log(myObj);
 
         sendResponse(response);
     };
 
     xhttp.open(request.method, request.url, true);
-    xhttp.send();
+    console.log("in bg", request.data);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded"); // must set header for post request, must make sure data is serializable
+
+    // this never worked? why?
+    // var stringified = JSON.stringify(request.data);
+    // console.log(stringified)
+    // xhttp.send(JSON.stringify(request.data));
+
+    xhttp.send(request.data);
     return true;
 });
 

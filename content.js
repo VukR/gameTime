@@ -1,6 +1,6 @@
 //todo, not use global variable for loading data out of memory
 var courtsObj = {};
-//chrome.storage.sync.clear();
+// chrome.storage.sync.clear();
 chrome.storage.sync.get(null, function(result){
 	console.log('start');
 	console.log(result);
@@ -9,52 +9,52 @@ chrome.storage.sync.get(null, function(result){
 
 /*interval to get JSON of court data to compare to users desired watchlist courts
 hard coded url only for testing purpose*/
-var makeCall = setInterval(function(){
-	chrome.runtime.sendMessage({
-		method: "GET",
-		url: "http://scsctennis.gametime.net/scheduling/index/jsoncourtdata/" + 
-		"sport/1/date/2017-7-18",
-	}, function(response){
-		console.log("received response from bg");
-		var data = JSON.parse(response);
-		// console.log(response);
-		console.log(data);
-		availability(data);
+// var makeCall = setInterval(function(){
+// 	chrome.runtime.sendMessage({
+// 		method: "GET",
+// 		url: "http://scsctennis.gametime.net/scheduling/index/jsoncourtdata/" + 
+// 		"sport/1/date/2017-7-18",
+// 	}, function(response){
+// 		console.log("received response from bg");
+// 		var data = JSON.parse(response);
+// 		// console.log(response);
+// 		console.log(data);
+// 		availability(data);
 
-	});
-}, 10000);
+// 	});
+// }, 10000);
 
 /*compare courts out of memory to times of each respective court to see if court is
 available or not
 not hardcode dates to look for*/
 
-function availability(data){
+// function availability(data){
 
-	console.log("court availability");
-	for(var key in courtsObj){
-		var court = courtsObj[key].court;
-		var time = courtsObj[key].t;
+// 	console.log("court availability");
+// 	for(var key in courtsObj){
+// 		var court = courtsObj[key].court;
+// 		var time = courtsObj[key].t;
 
-		var courtBool = true;
-		console.log("court: " + court + " time: " + time);
-		for(var i = 0; i < data.e[court - 1].b.length; i++){
-			if(time == data.e[court - 1].b[i].t){
-				console.log("Court is still unavailable");
-				courtBool = false;
-			}
-		}
-		if(courtBool){
-			console.log('court is available');
-		}
-	}
-}
+// 		var courtBool = true;
+// 		console.log("court: " + court + " time: " + time);
+// 		for(var i = 0; i < data.e[court - 1].b.length; i++){
+// 			if(time == data.e[court - 1].b[i].t){
+// 				console.log("Court is still unavailable");
+// 				courtBool = false;
+// 			}
+// 		}
+// 		if(courtBool){
+// 			console.log('court is available');
+// 		}
+// 	}
+// }
 
 /*User id on page is 1533, doesnt change on new login.
 Receive message from background that request for data has completed.
 Poll for load of data*/
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse){
 	console.log("received message");
-	if (request.message){
+	if (request.message == "complete"){
 		var newLoad = setInterval(function(){
 			console.log("newload setInterval");
 			try{
@@ -69,6 +69,17 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse){
 
 		}, 100);
 	}
+
+	else{
+		// done weirdly to fit the by hand serialization. 
+		// todo fix serialization
+		var email = {};
+		email["email"] = request.message
+		// courtsObj["email"] = request.message;
+		courtsObj["email"] = email;
+		console.log("receive email", courtsObj);
+		sync();
+	}
 });
 
 //remove checkBoxes
@@ -79,9 +90,9 @@ function removeBoxes(){
         allBoxes[0].parentNode.removeChild(allBoxes[0]);
     }
 }
+
 //check type of court and place checkboxes
 function createBoxes(){
-
 	var courtColumn = document.querySelectorAll("td.timeslot");
 	var activeDate = document.getElementsByClassName("active")[1]
 	.getElementsByTagName("span")[0].innerHTML.trim();
@@ -144,7 +155,6 @@ function update(id, time, court){
 	}
 
 	else{
-		// courtsObj[id] = "reserved";
 		courtsObj[id] = {t: timeMinutes, court: court};
 		console.log("save id");
 	}
@@ -179,5 +189,37 @@ function sync(){
 	chrome.storage.sync.clear();
 	chrome.storage.sync.set(courtsObj, function(){
 		console.log("updated storage");
+		callServer(courtsObj);
+	});
+}
+
+function callServer(stored){
+	
+	// this looks fine, but when sent to server, appears nested inside another object?
+	// var postString1 = JSON.stringify(stored);
+	// console.log(postString1);
+
+	// https://stackoverflow.com/questions/15872658/standardized-way-to-serialize-json-to-query-string
+	// serialize data by hand to be sent to server, works
+	var postString = ""
+	for (key in stored){
+		// console.log(key);
+		for (item in stored[key]){
+			// console.log(item);
+			postString +=  "[" + key + "] =";
+			postString +=  "[" + item + "]"  + "=";
+			postString += stored[key][item] + "&";
+		}
+	}
+	// console.log(postString);
+
+	chrome.runtime.sendMessage({
+		method: "POST",
+		url: "http://localhost:8080/",
+		data: postString
+		// data: postString1
+		// data: stored
+	}, function(response){
+		// console.log(response);
 	});
 }
