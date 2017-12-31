@@ -73,10 +73,11 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse){
 	else{
 		// done weirdly to fit the by hand serialization. 
 		// todo fix serialization
-		var email = {};
-		email["email"] = request.message
+		// var email = {};
+		// email["email"] = request.message
 		// courtsObj["email"] = request.message;
-		courtsObj["email"] = email;
+		console.log(request.message);
+		courtsObj["email"] = request.message;
 		console.log("receive email", courtsObj);
 		sync();
 	}
@@ -196,28 +197,28 @@ function sync(){
 function callServer(stored){
 	
 	// this looks fine, but when sent to server, appears nested inside another object?
-	// var postString1 = JSON.stringify(stored);
-	// console.log(postString1);
+	var postString1 = JSON.stringify(stored);
+	console.log(postString1);
 
 	// https://stackoverflow.com/questions/15872658/standardized-way-to-serialize-json-to-query-string
 	// serialize data by hand to be sent to server, works
-	var postString = ""
-	for (key in stored){
-		// console.log(key);
-		for (item in stored[key]){
-			// console.log(item);
-			postString +=  "[" + key + "] =";
-			postString +=  "[" + item + "]"  + "=";
-			postString += stored[key][item] + "&";
-		}
-	}
+	// var postString = ""
+	// for (key in stored){
+	// 	// console.log(key);
+	// 	for (item in stored[key]){
+	// 		// console.log(item);
+	// 		postString +=  "[" + key + "] =";
+	// 		postString +=  "[" + item + "]"  + "=";
+	// 		postString += stored[key][item] + "&";
+	// 	}
+	// }
 	// console.log(postString);
 
 	chrome.runtime.sendMessage({
 		method: "POST",
 		url: "http://localhost:8080/",
-		data: postString
-		// data: postString1
+		// data: postString
+		data: postString1
 		// data: stored
 	}, function(response){
 		// console.log(response);
