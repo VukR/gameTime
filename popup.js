@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	var emailValue
 	// console.log("content loaded");
 	document.getElementById("submit").onclick = function(){
-		emailValue = document.getElementsByName("email")[0].value;
+		emailValue = document.getElementsByName("email")[0].value.trim();
 
 		chrome.tabs.query({currentWindow: true, active: true}, function (tabs){
 			var activeTab = tabs[0];

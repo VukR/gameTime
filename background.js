@@ -30,22 +30,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse){
     console.log("in bg", request.data);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded"); // must set header for post request, must make sure data is serializable
 
-    // this never worked? why?
-    // var stringified = JSON.stringify(request.data);
-    // console.log(stringified)
-    // xhttp.send(JSON.stringify(request.data));
-
     xhttp.send(request.data);
     return true;
 });
-
-// var makeCall = setInterval(function(){
-
-//     var xhttp = new XMLHttpRequest();
-//     xhttp.open("GET", "http://scsctennis.gametime.net/scheduling/index/jsoncourtdata/" + 
-//         "sport/1/date/2017-7-16", false);
-//     xhttp.send();
-//     var result = xhttp.responseText;
-//     clearInterval(makeCall);
-//     console.log(result);
-// }, 5000);
