@@ -102,17 +102,25 @@ function update(id, time, court){
 	//console.log("Time: " + time + " court: " + court);
 	var timeMinutes = convertTime(time);
 
-	if(id in courtsObj){
+	if(courtsObj["email"] == null){
+		alert("You must enter an email address before watchlisting courts!")
+		var toUncheck = document.getElementById(id);
+		toUncheck.checked = false;
+	}
+
+	else if(id in courtsObj){
 		delete courtsObj[id];
 		console.log("removed id");
+		sync();
 	}
 
 	else{
-		courtsObj[id] = {t: timeMinutes, court: court};
+		courtsObj[id] = {t: timeMinutes, court: court, flag: false};
 		console.log("save id");
+		sync();
 	}
 
-	sync();
+	// sync();
 }
 
 //convert court time to minutes

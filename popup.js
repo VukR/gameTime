@@ -13,9 +13,15 @@ document.addEventListener('DOMContentLoaded', function() {
 	document.getElementById("submit").onclick = function(){
 		emailValue = document.getElementsByName("email")[0].value.trim();
 
-		chrome.tabs.query({currentWindow: true, active: true}, function (tabs){
-			var activeTab = tabs[0];
-		    chrome.tabs.sendMessage(activeTab.id, {"message": emailValue});
-		});
+		if(emailValue == ""){
+			alert("You must enter an email address before watchlisting courts!");
+		}
+
+		else{
+			chrome.tabs.query({currentWindow: true, active: true}, function (tabs){
+				var activeTab = tabs[0];
+			    chrome.tabs.sendMessage(activeTab.id, {"message": emailValue});
+			});
+		}
 	}
 });

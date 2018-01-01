@@ -55,23 +55,36 @@ function compareData(gtData, dbData){
   for(var i = 0; i < dbData.length; i++){
     userObj = dbData[i] // grabs ith user from documents
     courts = userObj["courts"]; // extract courts user has selected
-    // console.log(courts);
+    email = userObj["email"];
+    console.log(courts);
 
     for(var x in courts){
+      console.log(x);
       court = courts[x].court;
       time = courts[x].t;
-      // console.log("court:", court, "time:", time);
-
       var courtBool = true
+      
       for(var y = 0; y < gtData.e[court - 1].b.length; y++){
         if(time == gtData.e[court - 1].b[y].t){
          console.log("Court is still unavailable");
          courtBool = false;
+         courts[x].flag = false;
+         var key = "courts."+ x;
+         db.users.update({"email":email}, {$set:{[key] :courts[x]}})
         }
       } 
 
       if(courtBool){
-       console.log('court is available');
+        console.log('court is available');
+        if(courts[x].flag){
+          console.log("already sent");
+        }
+        else{
+          console.log("send email");
+          courts[x].flag = true;
+          var key = "courts."+ x;
+          db.users.update({"email":email}, {$set:{[key] :courts[x]}})
+        }
       }
     }
   }
@@ -82,7 +95,7 @@ var makeCall = setInterval(function(){
   var loginLink = "https://scsctennis.gametime.net/auth/json-index";
   var courtsLink = "http://scsctennis.gametime.net/scheduling/index/jsoncourtdata/sport/1/date/2018-01-02";
 
-  request.post({url: loginLink, form: {username: "username", password: "password"}}, function(error, response, body){
+  request.post({url: loginLink, form: {username: "vukey", password: "tennis1"}}, function(error, response, body){
     request.get({url: courtsLink, json: true}, function(error, response, body){
       // console.log(response.body);
       // console.log(response.body.e[0].b);
