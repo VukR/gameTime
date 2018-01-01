@@ -1,6 +1,8 @@
 var request = require("request"); // npm install request
 var request = request.defaults({jar: true}) // enable cookies to be used automatically
 
+var nodemailer = require("nodemailer")
+
 var mongojs = require("mongojs");
 var db = mongojs("localhost:27017/gameTime", ["users"]); // create connection to db, include collections that will be used
 
@@ -63,7 +65,7 @@ function compareData(gtData, dbData){
       court = courts[x].court;
       time = courts[x].t;
       var courtBool = true
-      
+
       for(var y = 0; y < gtData.e[court - 1].b.length; y++){
         if(time == gtData.e[court - 1].b[y].t){
          console.log("Court is still unavailable");
@@ -84,10 +86,40 @@ function compareData(gtData, dbData){
           courts[x].flag = true;
           var key = "courts."+ x;
           db.users.update({"email":email}, {$set:{[key] :courts[x]}})
+          sendEmail(email, key);
         }
       }
     }
   }
+}
+
+function sendEmail(email, key){
+  var transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth:{
+      user: "email",
+      pass: "password"
+    },
+    tls:{
+        rejectUnauthorized: false //avoids authorization issue
+    }
+  });
+
+  var mailOptions = {
+    from: "email",
+    to: email,
+    subject: "A court has opened up",
+    text: key
+  };
+
+  transporter.sendMail(mailOptions, function(error, info){
+    if(error){
+      console.log(error);
+    }
+    else{
+      console.log("Email sent: ", info.response);
+    }
+  })
 }
 
 // every 10 seconds sends request to gametime server 
@@ -95,7 +127,7 @@ var makeCall = setInterval(function(){
   var loginLink = "https://scsctennis.gametime.net/auth/json-index";
   var courtsLink = "http://scsctennis.gametime.net/scheduling/index/jsoncourtdata/sport/1/date/2018-01-02";
 
-  request.post({url: loginLink, form: {username: "vukey", password: "tennis1"}}, function(error, response, body){
+  request.post({url: loginLink, form: {username: "username", password: "password"}}, function(error, response, body){
     request.get({url: courtsLink, json: true}, function(error, response, body){
       // console.log(response.body);
       // console.log(response.body.e[0].b);
