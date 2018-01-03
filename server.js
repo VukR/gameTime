@@ -1,7 +1,8 @@
 var request = require("request"); // npm install request
 var request = request.defaults({jar: true}) // enable cookies to be used automatically
 
-var nodemailer = require("nodemailer")
+var nodemailer = require("nodemailer");
+var moment = require('moment');
 
 var mongojs = require("mongojs");
 var db = mongojs("localhost:27017/gameTime", ["users"]); // create connection to db, include collections that will be used
@@ -48,26 +49,26 @@ function retrieveData(callback){
 }
 
 // compare database data with gametime server data
-function compareData(gtData, dbData){
+function compareData(gtData, dbData, date){
   console.log("in compare data");
-  // console.log(gtData);
-  console.log(dbData);
+  console.log(gtData);
+  // console.log(dbData);
 
   var userObj, court, time, courts
   for(var i = 0; i < dbData.length; i++){
     userObj = dbData[i] // grabs ith user from documents
     courts = userObj["courts"]; // extract courts user has selected
     email = userObj["email"];
-    console.log(courts);
+    // console.log(courts);
 
     for(var x in courts){
-      console.log(x);
+      // console.log(x);
       court = courts[x].court;
       time = courts[x].t;
       var courtBool = true
 
       for(var y = 0; y < gtData.e[court - 1].b.length; y++){
-        if(time == gtData.e[court - 1].b[y].t){
+        if(time == gtData.e[court - 1].b[y].t && x.indexOf(date) > -1){
          console.log("Court is still unavailable");
          courtBool = false;
          courts[x].flag = false;
@@ -76,7 +77,7 @@ function compareData(gtData, dbData){
         }
       } 
 
-      if(courtBool){
+      if(courtBool && x.indexOf(date) > -1){
         console.log('court is available');
         if(courts[x].flag){
           console.log("already sent");
@@ -97,8 +98,8 @@ function sendEmail(email, key){
   var transporter = nodemailer.createTransport({
     service: "gmail",
     auth:{
-      user: "email",
-      pass: "password"
+      user: "gametimewatchlist@gmail.com",
+      pass: "scscgametimetennis1"
     },
     tls:{
         rejectUnauthorized: false //avoids authorization issue
@@ -106,7 +107,7 @@ function sendEmail(email, key){
   });
 
   var mailOptions = {
-    from: "email",
+    from: "gametimewatchlist@gmail.com",
     to: email,
     subject: "A court has opened up",
     text: key
@@ -125,17 +126,22 @@ function sendEmail(email, key){
 // every 10 seconds sends request to gametime server 
 var makeCall = setInterval(function(){
   var loginLink = "https://scsctennis.gametime.net/auth/json-index";
-  var courtsLink = "http://scsctennis.gametime.net/scheduling/index/jsoncourtdata/sport/1/date/2018-01-02";
+  request.post({url: loginLink, form: {username: "vukey", password: "tennis1"}}, function(error, response, body){
+    for (var i = 0; i < 7; i++){
+      //iife to make closure, makes i of the loop be in a function scope
+      (function(courtsLink, day){
+        request.get({url: courtsLink, json: true}, function(error, response, body){
+          console.log(courtsLink);
+          console.log(courtsLink.slice(-10,courtsLink.length));
+          console.log(day);
 
-  request.post({url: loginLink, form: {username: "username", password: "password"}}, function(error, response, body){
-    request.get({url: courtsLink, json: true}, function(error, response, body){
-      // console.log(response.body);
-      // console.log(response.body.e[0].b);
-
-      retrieveData(function(data){
-        compareData(response.body, data);
-      });
-    });
+          retrieveData(function(data){
+            compareData(response.body, data, day);
+          });
+        });
+      })("http://scsctennis.gametime.net/scheduling/index/jsoncourtdata/sport/1/date/" + moment().add(i, "days").format("YYYY-MM-DD"), 
+      moment().add(i, "days").format("dddd"));
+    }
   });
 }, 10000);
 
