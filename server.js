@@ -137,6 +137,7 @@ function sendEmail(email, key){
 
 // every 10 seconds sends request to gametime server 
 var makeCall = setInterval(function(){
+  console.log("5 minutes passed");
   var loginLink = "https://scsctennis.gametime.net/auth/json-index";
   request.post({url: loginLink, form: {username: "vukey", password: "tennis1"}}, function(error, response, body){
     for (var i = 0; i < 7; i++){
