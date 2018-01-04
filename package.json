@@ -1,0 +1,30 @@
+{
+  "name": "gametime-server",
+  "version": "1.0.0",
+  "description": "http requests to gametime",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VukR/gameTime.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/VukR/gameTime/issues"
+  },
+  "engines": {
+    "node": "4.1.x"
+  },
+  "homepage": "https://github.com/VukR/gameTime#readme",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2",
+    "moment": "^2.20.1",
+    "mongojs": "^2.4.1",
+    "nodemailer": "^4.4.1",
+    "request": "^2.83.0"
+  }
+}
