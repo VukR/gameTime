@@ -98,7 +98,9 @@ function compareData(gtData, dbData, day){
             courts[x].flag = true;
             var key = "courts."+ x;
             db.users.update({"email":email}, {$set:{[key] :courts[x]}})
-            sendEmail(email, key);
+
+            var message = key.split(".")[1]
+            sendEmail(email, message);
           }
         }
       }
@@ -106,7 +108,7 @@ function compareData(gtData, dbData, day){
   }
 }
 
-function sendEmail(email, key){
+function sendEmail(email, message){
   var transporter = nodemailer.createTransport({
     service: "gmail",
     auth:{
@@ -122,7 +124,7 @@ function sendEmail(email, key){
     from: "gametimewatchlist@gmail.com",
     to: email,
     subject: "A court has opened up",
-    text: key
+    text: message
   };
 
   transporter.sendMail(mailOptions, function(error, info){
