@@ -5,8 +5,8 @@ var nodemailer = require("nodemailer");
 var moment = require('moment');
 
 var mongojs = require("mongojs");
-var db = mongojs("localhost:27017/gameTime", ["users"]); // create connection to db, include collections that will be used
-
+// var db = mongojs("localhost:27017/gameTime", ["users"]); // create connection to db, include collections that will be used
+var db = mongojs("mongodb://vukey:vukeypassword@ds237947.mlab.com:37947/gametime", ["users"])
 var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();

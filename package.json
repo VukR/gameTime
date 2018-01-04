@@ -23,6 +23,7 @@
     "body-parser": "^1.18.2",
     "express": "^4.16.2",
     "moment": "^2.20.1",
+    "mongodb-stitch": "^2.3.1",
     "mongojs": "^2.4.1",
     "nodemailer": "^4.4.1",
     "request": "^2.83.0"
