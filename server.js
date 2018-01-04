@@ -25,7 +25,7 @@ function storeData(data){
 
   // look for user in database
   db.users.find({"email": email}).count(function(err, count){
-    console.log(count);
+    // console.log(count);
 
     // user exists
     if (count > 0){
@@ -50,7 +50,7 @@ function retrieveData(callback){
 
 // compare database data with gametime server data
 function compareData(gtData, dbData, day){
-  console.log("in compare data");
+  // console.log("in compare data");
   // console.log(gtData);
   // console.log(dbData);
 
@@ -72,7 +72,7 @@ function compareData(gtData, dbData, day){
 
       timeMinutes = moment().minutes() + moment().hours() * 60;
       if(x.indexOf(moment().format("dddd")) > -1 && time <= timeMinutes){
-        console.log("removing", key);
+        // console.log("removing", key);
         db.users.update({"email":email}, {$unset: {[key]:""}})
 
       }
@@ -80,7 +80,7 @@ function compareData(gtData, dbData, day){
 
         for(var y = 0; y < gtData.e[court - 1].b.length; y++){
           if(time == gtData.e[court - 1].b[y].t && x.indexOf(day) > -1){
-           console.log("Court is still unavailable");
+           // console.log("Court is still unavailable");
            courtBool = false;
            courts[x].flag = false;
            // var key = "courts."+ x;
@@ -89,12 +89,12 @@ function compareData(gtData, dbData, day){
         } 
 
         if(courtBool && x.indexOf(day) > -1){
-          console.log('court is available');
+          // console.log('court is available');
           if(courts[x].flag){
-            console.log("already sent");
+            // console.log("already sent");
           }
           else{
-            console.log("send email");
+            // console.log("send email");
             courts[x].flag = true;
             var key = "courts."+ x;
             db.users.update({"email":email}, {$set:{[key] :courts[x]}})
@@ -143,9 +143,9 @@ var makeCall = setInterval(function(){
       //iife to make closure, makes i of the loop be in a function scope
       (function(courtsLink, day){
         request.get({url: courtsLink, json: true}, function(error, response, body){
-          console.log(courtsLink);
-          console.log(courtsLink.slice(-10,courtsLink.length));
-          console.log(day);
+          // console.log(courtsLink);
+          // console.log(courtsLink.slice(-10,courtsLink.length));
+          // console.log(day);
 
           retrieveData(function(data){
             compareData(response.body, data, day);
