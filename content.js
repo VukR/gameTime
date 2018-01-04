@@ -85,7 +85,13 @@ function createBoxes(){
 					var currentTime = moment().format("h:mma");
 					// console.log(moment(timeCheck, "h:mma").isBefore(moment(currentTime, "h:mma")));
 					if(moment(timeCheck, "h:mma").isBefore(moment(currentTime, "h:mma")) && activeDate.split(" ")[0] == moment().format("dddd")){
-						//do nothing
+						delete courtsObj[activeDate + " Court " + (court + 1) + " Time " + time];
+						chrome.storage.sync.clear();
+						chrome.storage.sync.set(courtsObj, function(){
+							console.log("updated storage");
+							// callServer(courtsObj);
+						});
+
 					}
 					else{
 						var court = x + 1;
