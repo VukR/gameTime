@@ -198,7 +198,8 @@ function callServer(stored){
 
 	chrome.runtime.sendMessage({
 		method: "POST",
-		url: "http://localhost:8080/",
+		// url: "http://localhost:8080/",
+		url: "https://serene-reaches-53357.herokuapp.com/",
 		data: postString1
 	}, function(response){
 		// console.log(response);
