@@ -155,8 +155,8 @@ var makeCall = setInterval(function(){
       moment().add(i, "days").format("dddd"));
     }
   });
-}, 10000);
-// }, 1000 * 60 * 5);
+// }, 10000);
+}, 1000 * 60 * 5);
 
 // app.listen(8080);
 app.listen(process.env.PORT || 8080);
