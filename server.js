@@ -49,9 +49,9 @@ function retrieveData(callback){
 }
 
 // compare database data with gametime server data
-function compareData(gtData, dbData, date){
+function compareData(gtData, dbData, day){
   console.log("in compare data");
-  console.log(gtData);
+  // console.log(gtData);
   // console.log(dbData);
 
   var userObj, court, time, courts
@@ -61,33 +61,45 @@ function compareData(gtData, dbData, date){
     email = userObj["email"];
     // console.log(courts);
 
+    // db.users.update({"email": "vuk@ualberta.ca"}, {$unset: {"courts.Saturday  6 Court 4 Time 10:00 pm":""}})
+
     for(var x in courts){
       // console.log(x);
       court = courts[x].court;
       time = courts[x].t;
       var courtBool = true
+      var key = "courts."+ x;
 
-      for(var y = 0; y < gtData.e[court - 1].b.length; y++){
-        if(time == gtData.e[court - 1].b[y].t && x.indexOf(date) > -1){
-         console.log("Court is still unavailable");
-         courtBool = false;
-         courts[x].flag = false;
-         var key = "courts."+ x;
-         db.users.update({"email":email}, {$set:{[key] :courts[x]}})
-        }
-      } 
+      timeMinutes = moment().minutes() + moment().hours() * 60;
+      if(x.indexOf(moment().format("dddd")) > -1 && time <= timeMinutes){
+        console.log("removing", key);
+        db.users.update({"email":email}, {$unset: {[key]:""}})
 
-      if(courtBool && x.indexOf(date) > -1){
-        console.log('court is available');
-        if(courts[x].flag){
-          console.log("already sent");
-        }
-        else{
-          console.log("send email");
-          courts[x].flag = true;
-          var key = "courts."+ x;
-          db.users.update({"email":email}, {$set:{[key] :courts[x]}})
-          sendEmail(email, key);
+      }
+      else{
+
+        for(var y = 0; y < gtData.e[court - 1].b.length; y++){
+          if(time == gtData.e[court - 1].b[y].t && x.indexOf(day) > -1){
+           console.log("Court is still unavailable");
+           courtBool = false;
+           courts[x].flag = false;
+           // var key = "courts."+ x;
+           db.users.update({"email":email}, {$set:{[key] :courts[x]}})
+          }
+        } 
+
+        if(courtBool && x.indexOf(day) > -1){
+          console.log('court is available');
+          if(courts[x].flag){
+            console.log("already sent");
+          }
+          else{
+            console.log("send email");
+            courts[x].flag = true;
+            var key = "courts."+ x;
+            db.users.update({"email":email}, {$set:{[key] :courts[x]}})
+            sendEmail(email, key);
+          }
         }
       }
     }
@@ -144,5 +156,6 @@ var makeCall = setInterval(function(){
     }
   });
 }, 10000);
+// }, 1000 * 60 * 5);
 
 app.listen(8080);

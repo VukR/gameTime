@@ -9,7 +9,7 @@
         "http://scsctennis.gametime.net/scheduling/index/index/sport/1#date=/*/&group=null"
         // http://scsctennis.gametime.net/scheduling/index/index/sport/1#date=2017-07-15&group=null
       ],
-      "js": ["content.js"]
+      "js": ["moment.js", "content.js"]
     }
   ],
   "permissions":[

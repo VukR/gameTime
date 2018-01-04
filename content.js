@@ -47,38 +47,64 @@ function removeBoxes(){
 
 //check type of court and place checkboxes
 function createBoxes(){
+	// console.log(moment().format("h:mma"));
+
 	var courtColumn = document.querySelectorAll("td.timeslot");
 	var activeDate = document.getElementsByClassName("active")[1]
 	.getElementsByTagName("span")[0].innerHTML.trim();
-	//console.log(activeDate);
 
-	//for each court
-	for(var x = 0; x < courtColumn.length; x++){
-		var courts = courtColumn[x].querySelectorAll("div.timeslot");
-		//for each time slot on each respective court
-		for(var i = 0; i < courts.length; i++){
-			var firstChild = courts[i].firstChild;
+	var gtDateLink = document.getElementsByClassName("courtheading")[0].firstChild.href.split("=");
+	var gtDate = gtDateLink[1].split("&")[0];
+	var todayDate = moment().format("YYYY-M-D");
+	var futureDate = moment().add(6, "days").format("YYYY-M-D");
+	// console.log(gtDate);
+	// console.log(todayDate);
+	// console.log(moment(gtDate).isBefore(todayDate, "day"));
+	if(moment(gtDate).isBefore(todayDate, "day") || moment(gtDate).isAfter(futureDate, "days")){
+		// console.log(true);
+		//do nothing
+	}
+	else{
+		// console.log(false);
+	
+		//for each court
+		for(var x = 0; x < courtColumn.length; x++){
+			var courts = courtColumn[x].querySelectorAll("div.timeslot");
+			//for each time slot on each respective court
+			for(var i = 0; i < courts.length; i++){
+				var firstChild = courts[i].firstChild;
 
-			//courts reserved by staff or by members
-			if(firstChild.classList.contains("title") || 
-				firstChild.classList.contains("timenotitle")){
+				//courts reserved by staff or by members
+				if(firstChild.classList.contains("title") || 
+					firstChild.classList.contains("timenotitle")){
 
-				var time = firstChild.childNodes[0].innerHTML.trim();
-				var court = x + 1;
-				//creating the check box
-				var checkBox = document.createElement("input");
-				checkBox.type = "checkbox";
-				checkBox.setAttribute("time", time);
-				checkBox.setAttribute("court", court);
-				checkBox.id = activeDate + " Court " + court + " Time " + time;
-				checkBox.className = "checkBox";
-				//when box is clicked, calls to update it in memory
-				checkBox.onclick = function(){
-					// update(this.id, firstChild.childNodes[0].innerHTML.trim(), (x+1));
-					update(this.id, this.getAttribute("time"), this.getAttribute("court"));
+					var trimExtraIndex = firstChild.childNodes[0].innerHTML.trim().indexOf("m");
+					var time = firstChild.childNodes[0].innerHTML.trim().slice(0, trimExtraIndex + 1);
+					// var time = firstChild.childNodes[0].innerHTML.trim();
+					var timeCheck = time.split(" ")[0] + time.split(" ")[1];
+					var currentTime = moment().format("h:mma");
+					// console.log(moment(timeCheck, "h:mma").isBefore(moment(currentTime, "h:mma")));
+					if(moment(timeCheck, "h:mma").isBefore(moment(currentTime, "h:mma")) && activeDate.split(" ")[0] == moment().format("dddd")){
+						//do nothing
+					}
+					else{
+						var court = x + 1;
+						//creating the check box
+						var checkBox = document.createElement("input");
+						checkBox.type = "checkbox";
+						checkBox.setAttribute("time", time);
+						checkBox.setAttribute("court", court);
+						checkBox.id = activeDate + " Court " + court + " Time " + time;
+						checkBox.className = "checkBox";
+						//when box is clicked, calls to update it in memory
+						checkBox.onclick = function(){
+							// update(this.id, firstChild.childNodes[0].innerHTML.trim(), (x+1));
+							update(this.id, this.getAttribute("time"), this.getAttribute("court"));
+						}
+						//on each court append the check box
+						courts[i].appendChild(checkBox);
+					}
 				}
-				//on each court append the check box
-				courts[i].appendChild(checkBox);
 			}
 		}
 	}
