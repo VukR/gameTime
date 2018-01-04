@@ -16,7 +16,7 @@
     "url": "https://github.com/VukR/gameTime/issues"
   },
   "engines": {
-    "node": "4.1.x"
+    "node": "7.8.0"
   },
   "homepage": "https://github.com/VukR/gameTime#readme",
   "dependencies": {
