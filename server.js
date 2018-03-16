@@ -1,3 +1,11 @@
+var sourceFile = require('./sensitive');
+const USERNAME = sourceFile.username;
+const PASSWORD = sourceFile.password;
+const MONGOLINK = sourceFile.mongoLink;
+const COLLECTION = sourceFile.collection;
+const EMAILUSER = sourceFile.emailUser;
+const EMAILPASS = sourceFile.emailPass;
+
 var request = require("request"); // npm install request
 var request = request.defaults({jar: true}) // enable cookies to be used automatically
 
@@ -5,8 +13,8 @@ var nodemailer = require("nodemailer");
 var moment = require('moment');
 
 var mongojs = require("mongojs");
-// var db = mongojs("localhost:27017/gameTime", ["users"]); // create connection to db, include collections that will be used
-var db = mongojs("mongodb://vukey:vukeypassword@ds237947.mlab.com:37947/gametime", ["users"])
+// create connection to db, include collections that will be used
+var db = mongojs(MONGOLINK, [COLLECTION])
 var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
@@ -14,7 +22,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.post('/', function(req, res) {
-  storeData(req.body); // data in the body for some reason is nested inside an object?
+  storeData(req.body);
 });
 
 function storeData(data){
@@ -112,8 +120,8 @@ function sendEmail(email, message){
   var transporter = nodemailer.createTransport({
     service: "gmail",
     auth:{
-      user: "gametimewatchlist@gmail.com",
-      pass: "scscgametimetennis1"
+      user: EMAILUSER,
+      pass: EMAILPASS
     },
     tls:{
         rejectUnauthorized: false //avoids authorization issue
@@ -121,7 +129,7 @@ function sendEmail(email, message){
   });
 
   var mailOptions = {
-    from: "gametimewatchlist@gmail.com",
+    from: EMAILUSER,
     to: email,
     subject: "A court has opened up",
     text: message
@@ -136,12 +144,11 @@ function sendEmail(email, message){
     }
   })
 }
-
-// every 10 seconds sends request to gametime server 
+  
 var makeCall = setInterval(function(){
   console.log("5 minutes passed");
   var loginLink = "https://scsctennis.gametime.net/auth/json-index";
-  request.post({url: loginLink, form: {username: "vukey", password: "tennis1"}}, function(error, response, body){
+  request.post({url: loginLink, form: {username: USERNAME, password: PASSWORD}}, function(error, response, body){
     for (var i = 0; i < 7; i++){
       //iife to make closure, makes i of the loop be in a function scope
       (function(courtsLink, day){

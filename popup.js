@@ -22,7 +22,11 @@ document.addEventListener('DOMContentLoaded', function() {
 	document.getElementById("submit").onclick = function(){
 		emailValue = document.getElementsByName("email")[0].value.trim();
 		// document.getElementById("email").firstChild.innerHTML = emailValue;
-		console.log(document.getElementById("email").firstElementChild.innerHTML = "Current email to recieve notifications: "+ emailValue);
+		try{
+			console.log(document.getElementById("email").firstElementChild.innerHTML = "Current email to recieve notifications: "+ emailValue);
+		}
+		catch(err){
+		}
 
 		if(emailValue == ""){
 			alert("You must enter an email address before watchlisting courts!");

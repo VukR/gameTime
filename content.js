@@ -107,6 +107,11 @@ function createBoxes(){
 						checkBox.onclick = function(){
 							// update(this.id, firstChild.childNodes[0].innerHTML.trim(), (x+1));
 							update(this.id, this.getAttribute("time"), this.getAttribute("court"));
+							console.log("id test", this.id);
+							setTimeout(function(){
+								console.log("stahp");
+								document.getElementById(this.id).disabled = true;
+							}, 2000);
 						}
 						//on each court append the check box
 						courts[i].appendChild(checkBox);

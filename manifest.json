@@ -1,13 +1,12 @@
 {
   "manifest_version": 2,
-  "name": "GameTime",
-  "version": "0.1",
+  "name": "courtsWatch",
+  "version": "0.3",
   "content_scripts": [
     {
       "matches": [
         "http://scsctennis.gametime.net/scheduling/index/index/sport/1*",
         "http://scsctennis.gametime.net/scheduling/index/index/sport/1#date=/*/&group=null"
-        // http://scsctennis.gametime.net/scheduling/index/index/sport/1#date=2017-07-15&group=null
       ],
       "js": ["moment.js", "content.js"]
     }
